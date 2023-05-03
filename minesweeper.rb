@@ -14,7 +14,7 @@ class Board
     @blocks = []
     generate_blocks
     plant_mines
-    mined_neigbours
+    mined_neighbours
   end 
 
   def draw
@@ -57,13 +57,20 @@ class Board
     end
   end
 
-  def mined_neigbours
+  def mined_neighbours  
     @blocks.each_with_index do |_, x|
       @blocks[x].each_with_index do |_, y|
         block = @blocks[x][y]
-        p block
+        next if block[:mine]
+
+        block[:mines_nearby] = number_of_mines_nearby(x,y)
       end 
     end 
+  end
+
+
+  def number_of_mines_nearby(x,y)
+    
   end
 end 
 
@@ -71,8 +78,9 @@ end
 
 set width: WIDTH
 set height: HEIGHT
-set title: 'minesweeper'
 set background: BACKGROUND_COLOR
+set title: 'minesweeper'
+
 
 
 board = Board.new
