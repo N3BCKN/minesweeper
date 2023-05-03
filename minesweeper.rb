@@ -73,7 +73,8 @@ class Board
     mines = 0
     (-1..1).each do |i|
       (-1..1).each do |n|
-        next if x+i < 0 || x+i >= 12 || y+n < 0 || y+n >= 16
+        next if !(0..12).includes?(x+i) || !(0..16).includes?(y+n)
+        # next if x+i < 0 || x+i >= 12 || y+n < 0 || y+n >= 16
         mines += 1 if @blocks[x+i][y+n][:mine]
       end 
     end 
