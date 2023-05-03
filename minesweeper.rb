@@ -28,7 +28,7 @@ class Board
 
         if block[:revealed] && !block[:mine]
           Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'green')
-          Text.new(block[:mines_nearby], x: x * GRID +  (GRID/3), y: y * GRID + (GRID/3), size: GRID * 0.55, color: 'black')
+          Text.new(block[:mines_nearby], x: x * GRID +  (GRID/3), y: y * GRID + (GRID/3), size: GRID * 0.55, color: 'black') if block[:mines_nearby] > 0
         elsif block[:revealed] && block[:mine]
           # Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'red')
           Image.new('./images/boom.png',x: x * GRID, y: y * GRID, size: GRID - 1)
@@ -107,7 +107,35 @@ class Board
   end
 
   def reveal_nearby_blocks_with_zero_bombs(x,y)
-    
+    n = 1
+    #left
+      loop do
+        break if !(0...@cols).include?(x-n) || @blocks[x-n][y][:mine] || @blocks[x-n][y][:mines_nearby] > 0
+        @blocks[x-n][y][:revealed] = true
+        n += 1
+      end
+    #right
+    n = 1
+    loop do
+      break if !(0...@cols).include?(x+n) || @blocks[x+n][y][:mine] || @blocks[x+n][y][:mines_nearby] > 0
+      @blocks[x+n][y][:revealed] = true
+      n += 1
+    end
+    #up
+    n = 1
+    loop do
+      break if !(0...@rows).include?(y-n) || @blocks[x][y-n][:mine] || @blocks[x][y-n][:mines_nearby] > 0
+      @blocks[x][y-n][:revealed] = true
+      n += 1
+    end
+    #down
+    n = 1
+    loop do
+      break if !(0...@rows).include?(y+n) || @blocks[x][y+n][:mine] || @blocks[x][y+n][:mines_nearby] > 0
+      @blocks[x][y+n][:revealed] = true
+      n += 1
+    end
+    #diagonal
   end
 end 
 
