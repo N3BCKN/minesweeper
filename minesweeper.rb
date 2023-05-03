@@ -24,6 +24,7 @@ class Board
           Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'red')
         else 
           Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'green')
+          Text.new(@blocks[x][y][:mines_nearby], x: x * GRID +  (GRID/3), y: y * GRID + (GRID/3), size: GRID/2, color: 'black')
         end
       end 
     end 
@@ -62,7 +63,6 @@ class Board
       @blocks[x].each_with_index do |_, y|
         block = @blocks[x][y]
         next if block[:mine]
-
         block[:mines_nearby] = number_of_mines_nearby(x,y)
       end 
     end 
@@ -70,7 +70,14 @@ class Board
 
 
   def number_of_mines_nearby(x,y)
-    
+    mines = 0
+    (-1..1).each do |i|
+      (-1..1).each do |n|
+        next if x+i < 0 || x+i >= 12 || y+n < 0 || y+n >= 16
+        mines += 1 if @blocks[x+i][y+n][:mine]
+      end 
+    end 
+    mines
   end
 end 
 
