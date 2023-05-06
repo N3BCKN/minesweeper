@@ -4,7 +4,8 @@ GRID = 50
 WIDTH = 600
 HEIGHT = 800
 BACKGROUND_COLOR = '#ffffff'
-BLOCK_COLOR = '#eeeeee'
+HIDDEN_BLOCK_COLOR = '#0058D4'
+REVEALED_BLOCK_COLOR = '#2ECC40'
 DIFFICULTY_LEVEL = 0.1
 
 class Board
@@ -25,15 +26,20 @@ class Board
       @blocks[x].each_with_index do |_, y|
         block = @blocks[x][y]
 
-        if block[:revealed] && !block[:mine]
-          Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'green')
-          Text.new(block[:mines_nearby], x: x * GRID +  (GRID/3), y: y * GRID + (GRID/3), size: GRID * 0.55, color: 'black') if block[:mines_nearby] > 0
-        elsif block[:revealed] && block[:mine]
-          # Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'red')
-          Image.new('./images/boom.png',x: x * GRID, y: y * GRID, size: GRID - 1)
-        else
-          Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: 'blue')
-        end
+        begin
+          if block[:revealed] && !block[:mine]
+            Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: REVEALED_BLOCK_COLOR)
+            Text.new(block[:mines_nearby], x: x * GRID +  (GRID/3), y: y * GRID + (GRID/3), size: GRID * 0.55, color: 'black') if block[:mines_nearby] > 0
+          elsif block[:revealed] && block[:mine]
+            Image.new('./images/boom.png',x: x * GRID, y: y * GRID)
+          elsif !block[:revealed] && block[:flagged]
+            Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: HIDDEN_BLOCK_COLOR)
+            Image.new('./images/flag.png',x: x * GRID, y: y * GRID)
+          else
+            Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: HIDDEN_BLOCK_COLOR)
+          end 
+        rescue => detail
+        end 
       end 
     end 
   end
@@ -42,13 +48,18 @@ class Board
     return if @game_over || @blocks[x][y][:revealed]
     
     @blocks[x][y][:revealed] = true
+    @blocks[x][y][:flagged] = false
     
     if @blocks[x][y][:mine]
       reveal_all_mines 
       @game_over = true
     end
+    reveal_blocks_with_zero_bombs(x,y) if @blocks[x][y][:mines_nearby] == 0
+  end
 
-    reveal_nearby_blocks_with_zero_bombs(x,y) if @blocks[x][y][:mines_nearby] == 0
+  def flag_block(x,y)
+    return if @game_over || @blocks[x][y][:revealed]
+    @blocks[x][y][:flagged] = !@blocks[x][y][:flagged]
   end
 
 
@@ -60,6 +71,7 @@ class Board
         block = {
           revealed: false,
           mine: false,
+          flagged: false,
           mines_nearby: 0
         }
         @blocks[x][y] = block
@@ -102,11 +114,10 @@ class Board
   end
 
   def reveal_all_mines
-    @blocks.flatten.map{ |b| b[:revealed] = true if b[:mine]}
+    @blocks.flatten.map!{ |b| b[:revealed] = true if b[:mine]}
   end
 
-  def reveal_nearby_blocks_with_zero_bombs(x,y)
-    p "#{x}, #{y}"
+  def reveal_blocks_with_zero_bombs(x,y)
     (-1..1).each do |i|
       (-1..1).each do |n|
         next if !(0...@cols).include?(x+i) || !(0...@rows).include?(y+n) || @blocks[x+i][y+n][:mine] || @blocks[x+i][y+n][:revealed]
@@ -129,7 +140,11 @@ update do
 end
 
 on :mouse_down do |event|
-  board.reveal_block(event.x / GRID, event.y / GRID)
+  if event.button == :left
+    board.reveal_block(event.x / GRID, event.y / GRID)
+  elsif event.button == :right
+    board.flag_block(event.x / GRID, event.y / GRID)
+  end
 end
 
 show
