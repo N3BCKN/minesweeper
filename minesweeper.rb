@@ -7,7 +7,6 @@ BACKGROUND_COLOR = '#ffffff'
 BLOCK_COLOR = '#eeeeee'
 DIFFICULTY_LEVEL = 0.1
 
-
 class Board
   attr_accessor :blocks
 
@@ -107,46 +106,20 @@ class Board
   end
 
   def reveal_nearby_blocks_with_zero_bombs(x,y)
-    n = 1
-    #left
-      loop do
-        break if !(0...@cols).include?(x-n) || @blocks[x-n][y][:mine] || @blocks[x-n][y][:mines_nearby] > 0
-        @blocks[x-n][y][:revealed] = true
-        n += 1
-      end
-    #right
-    n = 1
-    loop do
-      break if !(0...@cols).include?(x+n) || @blocks[x+n][y][:mine] || @blocks[x+n][y][:mines_nearby] > 0
-      @blocks[x+n][y][:revealed] = true
-      n += 1
-    end
-    #up
-    n = 1
-    loop do
-      break if !(0...@rows).include?(y-n) || @blocks[x][y-n][:mine] || @blocks[x][y-n][:mines_nearby] > 0
-      @blocks[x][y-n][:revealed] = true
-      n += 1
-    end
-    #down
-    n = 1
-    loop do
-      break if !(0...@rows).include?(y+n) || @blocks[x][y+n][:mine] || @blocks[x][y+n][:mines_nearby] > 0
-      @blocks[x][y+n][:revealed] = true
-      n += 1
-    end
-    #diagonal
+    p "#{x}, #{y}"
+    (-1..1).each do |i|
+      (-1..1).each do |n|
+        next if !(0...@cols).include?(x+i) || !(0...@rows).include?(y+n) || @blocks[x+i][y+n][:mine] || @blocks[x+i][y+n][:revealed]
+        reveal_block(x+i,y+n)
+      end 
+    end 
   end
 end 
-
-
 
 set width: WIDTH
 set height: HEIGHT
 set background: BACKGROUND_COLOR
 set title: 'minesweeper'
-
-
 
 board = Board.new
 
