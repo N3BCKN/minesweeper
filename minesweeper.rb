@@ -16,6 +16,7 @@ class Board
     @cols = (WIDTH/GRID).floor
     @rows = (HEIGHT/GRID).floor
     @game_over = false
+    @won = false
     generate_blocks
     plant_mines
     mined_neighbours
@@ -38,7 +39,12 @@ class Board
           else
             Square.new(x: x * GRID, y: y * GRID, size: GRID - 1, color: HIDDEN_BLOCK_COLOR)
           end 
+
+          if @won 
+            Text.new('You won', x: WIDTH/4, y: HEIGHT/3, size: 75, color: 'white', rotate: 45)
+          end 
         rescue => detail
+          p detail
         end 
       end 
     end 
@@ -60,6 +66,11 @@ class Board
   def flag_block(x,y)
     return if @game_over || @blocks[x][y][:revealed]
     @blocks[x][y][:flagged] = !@blocks[x][y][:flagged]
+    
+    if all_mines_flagged?
+      @game_over = true
+      @won = true
+    end 
   end
 
 
@@ -124,6 +135,15 @@ class Board
         reveal_block(x+i,y+n)
       end 
     end 
+  end
+
+  def all_mines_flagged?
+    blocks = @blocks.flatten 
+    num_mines = (blocks.select{ |b| b[:mine]}).size
+    num_flags = (blocks.select{ |b| b[:flagged]}).size
+    flagged_mines = (blocks.select { |b| b[:mine] && b[:flagged] }).size
+    
+    num_mines == num_flags && num_mines == flagged_mines
   end
 end 
 
